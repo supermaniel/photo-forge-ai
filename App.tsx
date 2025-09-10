@@ -416,4 +416,129 @@ const App: React.FC = () => {
                     className={`w-full capitalize font-semibold py-3 px-5 rounded-md transition-all duration-200 text-base ${
                         activeTab === tab 
                         ? 'bg-gradient-to-br from-blue-500 to-cyan-400 text-white shadow-lg shadow-cyan-500/40' 
-                        : 'text
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
+                >
+                    {tab === 'removeBg' ? 'Remove BG' : tab}
+                </button>
+            ))}
+        </div>
+        
+        <div className="w-full">
+            {activeTab === 'retouch' && (
+                <div className="flex flex-col items-center gap-4">
+                    <p className="text-md text-gray-400">
+                        {editHotspot ? 'Great! Now describe your localized edit below.' : 'Click an area on the image to make a precise edit.'}
+                    </p>
+                    <form onSubmit={(e) => { e.preventDefault(); handleGenerate(); }} className="w-full flex items-center gap-2">
+                        <input
+                            type="text"
+                            value={prompt}
+                            onChange={(e) => setPrompt(e.target.value)}
+                            placeholder={editHotspot ? "e.g., 'change my shirt color to blue'" : "First click a point on the image"}
+                            className="flex-grow bg-gray-800 border border-gray-700 text-gray-200 rounded-lg p-5 text-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition w-full disabled:cursor-not-allowed disabled:opacity-60"
+                            disabled={isLoading || !editHotspot}
+                        />
+                        <button 
+                            type="submit"
+                            className="bg-gradient-to-br from-blue-600 to-blue-500 text-white font-bold py-5 px-8 text-lg rounded-lg transition-all duration-300 ease-in-out shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-px active:scale-95 active:shadow-inner disabled:from-blue-800 disabled:to-blue-700 disabled:shadow-none disabled:cursor-not-allowed disabled:transform-none"
+                            disabled={isLoading || !prompt.trim() || !editHotspot}
+                        >
+                            Generate
+                        </button>
+                    </form>
+                </div>
+            )}
+            {activeTab === 'removeBg' && (
+                 <div className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-4 flex flex-col items-center gap-4 animate-fade-in backdrop-blur-sm">
+                    <h3 className="text-lg font-semibold text-center text-gray-300">Remove Background</h3>
+                    <p className="text-md text-gray-400 max-w-lg text-center">
+                        The AI will automatically identify the main subject and remove the background, making it transparent.
+                    </p>
+                    <button
+                        onClick={handleRemoveBackground}
+                        className="w-full max-w-xs mt-2 bg-gradient-to-br from-blue-600 to-blue-500 text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 ease-in-out shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-px active:scale-95 active:shadow-inner text-base disabled:from-blue-800 disabled:to-blue-700 disabled:shadow-none disabled:cursor-not-allowed disabled:transform-none"
+                        disabled={isLoading}
+                    >
+                        Remove Background
+                    </button>
+                </div>
+            )}
+            {activeTab === 'crop' && <CropPanel onApplyCrop={handleApplyCrop} onSetAspect={setAspect} isLoading={isLoading} isCropping={!!completedCrop?.width && completedCrop.width > 0} />}
+            {activeTab === 'adjust' && <AdjustmentPanel onApplyAdjustment={handleApplyAdjustment} isLoading={isLoading} />}
+            {activeTab === 'filters' && <FilterPanel onApplyFilter={handleApplyFilter} isLoading={isLoading} />}
+        </div>
+        
+        <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+            <button 
+                onClick={handleUndo}
+                disabled={!canUndo}
+                className="flex items-center justify-center text-center bg-white/10 border border-white/20 text-gray-200 font-semibold py-3 px-5 rounded-md transition-all duration-200 ease-in-out hover:bg-white/20 hover:border-white/30 active:scale-95 text-base disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white/5"
+                aria-label="Undo last action"
+            >
+                <UndoIcon className="w-5 h-5 mr-2" />
+                Undo
+            </button>
+            <button 
+                onClick={handleRedo}
+                disabled={!canRedo}
+                className="flex items-center justify-center text-center bg-white/10 border border-white/20 text-gray-200 font-semibold py-3 px-5 rounded-md transition-all duration-200 ease-in-out hover:bg-white/20 hover:border-white/30 active:scale-95 text-base disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white/5"
+                aria-label="Redo last action"
+            >
+                <RedoIcon className="w-5 h-5 mr-2" />
+                Redo
+            </button>
+            
+            <div className="h-6 w-px bg-gray-600 mx-1 hidden sm:block"></div>
+
+            {canUndo && (
+              <button 
+                  onMouseDown={() => setIsComparing(true)}
+                  onMouseUp={() => setIsComparing(false)}
+                  onMouseLeave={() => setIsComparing(false)}
+                  onTouchStart={() => setIsComparing(true)}
+                  onTouchEnd={() => setIsComparing(false)}
+                  className="flex items-center justify-center text-center bg-white/10 border border-white/20 text-gray-200 font-semibold py-3 px-5 rounded-md transition-all duration-200 ease-in-out hover:bg-white/20 hover:border-white/30 active:scale-95 text-base"
+                  aria-label="Press and hold to see original image"
+              >
+                  <EyeIcon className="w-5 h-5 mr-2" />
+                  Compare
+              </button>
+            )}
+
+            <button 
+                onClick={handleReset}
+                disabled={!canUndo}
+                className="text-center bg-transparent border border-white/20 text-gray-200 font-semibold py-3 px-5 rounded-md transition-all duration-200 ease-in-out hover:bg-white/10 hover:border-white/30 active:scale-95 text-base disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-transparent"
+              >
+                Reset
+            </button>
+            <button 
+                onClick={handleUploadNew}
+                className="text-center bg-white/10 border border-white/20 text-gray-200 font-semibold py-3 px-5 rounded-md transition-all duration-200 ease-in-out hover:bg-white/20 hover:border-white/30 active:scale-95 text-base"
+            >
+                Upload New
+            </button>
+
+            <button 
+                onClick={handleDownload}
+                className="flex-grow sm:flex-grow-0 ml-auto bg-gradient-to-br from-green-600 to-green-500 text-white font-bold py-3 px-5 rounded-md transition-all duration-300 ease-in-out shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/40 hover:-translate-y-px active:scale-95 active:shadow-inner text-base"
+            >
+                Download Image
+            </button>
+        </div>
+      </div>
+    );
+  };
+  
+  return (
+    <div className="min-h-screen text-gray-100 flex flex-col">
+      <Header />
+      <main className={`flex-grow w-full max-w-[1600px] mx-auto p-4 md:p-8 flex justify-center ${currentImage ? 'items-start' : 'items-center'}`}>
+        {renderContent()}
+      </main>
+    </div>
+  );
+};
+
+export default App;
