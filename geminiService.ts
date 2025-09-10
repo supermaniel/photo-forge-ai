@@ -63,11 +63,11 @@ const handleApiResponse = (
     throw new Error(errorMessage);
 };
 
-// Fix: Use process.env.API_KEY for the API key as per the coding guidelines.
-// This resolves the TypeScript error with `import.meta.env` and aligns with the
-// specified authentication method.
+// Fix: Use process.env.API_KEY as per the coding guidelines to resolve TypeScript error.
 const apiKey = process.env.API_KEY;
 if (!apiKey) {
+    // This will be caught by the build process if the variable is missing.
+    // In the browser, it will throw an error to the console.
     throw new Error("API_KEY environment variable not set.");
 }
 const ai = new GoogleGenAI({ apiKey });
