@@ -63,6 +63,15 @@ const handleApiResponse = (
     throw new Error(errorMessage);
 };
 
+// Fix: Use process.env.API_KEY for the API key as per the coding guidelines.
+// This resolves the TypeScript error with `import.meta.env` and aligns with the
+// specified authentication method.
+const apiKey = process.env.API_KEY;
+if (!apiKey) {
+    throw new Error("API_KEY environment variable not set.");
+}
+const ai = new GoogleGenAI({ apiKey });
+
 /**
  * Generates an edited image using generative AI based on a text prompt and a specific point.
  * @param originalImage The original image file.
@@ -76,8 +85,6 @@ export const generateEditedImage = async (
     hotspot: { x: number, y: number }
 ): Promise<string> => {
     console.log('Starting generative edit at:', hotspot);
-    // FIX: Use process.env.API_KEY as per the coding guidelines.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
     
     const originalImagePart = await fileToPart(originalImage);
     const prompt = `You are an expert photo editor AI. Your task is to perform a natural, localized edit on the provided image based on the user's request.
@@ -119,8 +126,6 @@ export const generateFilteredImage = async (
     filterPrompt: string,
 ): Promise<string> => {
     console.log(`Starting filter generation: ${filterPrompt}`);
-    // FIX: Use process.env.API_KEY as per the coding guidelines.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
     
     const originalImagePart = await fileToPart(originalImage);
     const prompt = `You are an expert photo editor AI. Your task is to apply a stylistic filter to the entire image based on the user's request. Do not change the composition or content, only apply the style.
@@ -157,8 +162,6 @@ export const generateAdjustedImage = async (
     adjustmentPrompt: string,
 ): Promise<string> => {
     console.log(`Starting global adjustment generation: ${adjustmentPrompt}`);
-    // FIX: Use process.env.API_KEY as per the coding guidelines.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
     
     const originalImagePart = await fileToPart(originalImage);
     const prompt = `You are an expert photo editor AI. Your task is to perform a natural, global adjustment to the entire image based on the user's request.
