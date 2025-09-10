@@ -1,0 +1,6 @@
+{
+  "name": "PhotoForge AI",
+  "description": "A powerful, AI-powered photo editor. Retouch, remove backgrounds, apply creative filters, and make professional adjustments to your images using simple text prompts.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
